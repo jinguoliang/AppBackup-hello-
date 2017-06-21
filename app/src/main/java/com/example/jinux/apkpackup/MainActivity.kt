@@ -4,16 +4,13 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import org.jetbrains.anko.*
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.view.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -84,10 +81,24 @@ class MListAdapter : BaseAdapter {
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val apkName = mData[position]
+        val apkInfo = mData[position]
+
+        val apkIconImageView = ImageView(mContext)
+        apkIconImageView.image = apkInfo.applicationInfo.loadIcon(mContext.packageManager)
+        apkIconImageView.padding = apkIconImageView.dip(5)
+        apkIconImageView.layoutParams = LinearLayout.LayoutParams(G_ICON_SIZE, G_ICON_SIZE)
+        (apkIconImageView.layoutParams as LinearLayout.LayoutParams).margin = apkIconImageView.dip(10)
+
         val apkNameTextView = TextView(mContext)
-        apkNameTextView.text = apkName.packageName
+        apkNameTextView.text = apkInfo.applicationInfo.loadLabel(mContext.packageManager)
         apkNameTextView.padding = apkNameTextView.dip(20)
-        return apkNameTextView
+
+        val linearLayout = LinearLayout(mContext)
+        linearLayout.orientation = LinearLayout.HORIZONTAL
+        linearLayout.addView(apkIconImageView)
+        linearLayout.addView(apkNameTextView)
+        linearLayout.gravity = Gravity.CENTER_VERTICAL
+
+        return linearLayout
     }
 }
