@@ -11,6 +11,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.view.*
+import org.jetbrains.anko.sdk25.coroutines.onClick
 
 
 class MainActivity : AppCompatActivity() {
@@ -93,11 +94,24 @@ class MListAdapter : BaseAdapter {
         apkNameTextView.text = apkInfo.applicationInfo.loadLabel(mContext.packageManager)
         apkNameTextView.padding = apkNameTextView.dip(20)
 
+        val apkStartButton = Button(mContext)
+        apkStartButton.text = mContext.getString(R.string.start)
+        apkStartButton.padding = apkStartButton.dip(3)
+        apkStartButton.onClick {
+            val intent = mContext.packageManager.getLaunchIntentForPackage(apkInfo.packageName)
+            try {
+                mContext.startActivity(intent)
+            } catch (e: Exception) {
+                mContext.toast(R.string.app_cant_start)
+            }
+        }
+
         val linearLayout = LinearLayout(mContext)
         linearLayout.orientation = LinearLayout.HORIZONTAL
+        linearLayout.gravity = Gravity.CENTER_VERTICAL
         linearLayout.addView(apkIconImageView)
         linearLayout.addView(apkNameTextView)
-        linearLayout.gravity = Gravity.CENTER_VERTICAL
+        linearLayout.addView(apkStartButton)
 
         return linearLayout
     }
