@@ -24,7 +24,7 @@ class MainActivity : ListActivity() {
         listAdapter = ApksAdapter(this, launchableApp.map { apk ->
             ApkItem(apk.loadIcon(packageManager),
                     apk.loadLabel(packageManager)) {
-                val intent = packageManager.getLaunchIntentForPackage(apk.resolvePackageName)
+                val intent = packageManager.getLaunchIntentForPackage(apk.activityInfo.packageName)
                 try {
                     startActivity(intent)
                 } catch (e: Exception) {
@@ -62,6 +62,7 @@ class MainActivity : ListActivity() {
 }
 
 class ApkItem(val icon: Drawable, val title: CharSequence, val onStartClick: ((v: View) -> Unit)) : ListItem {
+
     override fun apply(convertView: View) {
 
         val holder = getHolder(convertView)
@@ -118,5 +119,4 @@ class ApkItem(val icon: Drawable, val title: CharSequence, val onStartClick: ((v
 class ApksAdapter(ctx: Context, items: List<ListItem>) : ListItemAdapter(ctx, items) {
     override val listItemClasses: List<Class<out ListItem>>
         get() = listOf(ApkItem::class.java)
-
 }
