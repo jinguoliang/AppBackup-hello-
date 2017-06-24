@@ -36,3 +36,8 @@ repositories {
 //    maven { url 'https://maven.google.com' }
     mavenCentral()
 }
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}

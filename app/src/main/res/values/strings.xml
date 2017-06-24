@@ -4,4 +4,6 @@
     <string name="hello">Hello World</string>
     <string name="start">Start</string>
     <string name="app_cant_start">The app can\'t be started</string>
+    <string name="detail">Detail</string>
+    <string name="app_cant_show_detail_page">Can\'t open detail page</string>
 </resources>
