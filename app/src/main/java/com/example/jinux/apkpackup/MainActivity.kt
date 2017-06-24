@@ -84,13 +84,21 @@ class ApkItem(val icon: Drawable, val title: CharSequence, val onStartClick: ((v
     override fun createView(ui: AnkoContext<ListItemAdapter>) =
         ui.apply {
             linearLayout {
+                padding = dip(10)
+
                 imageView {
                     id = android.R.id.icon
                     padding = dip(5)
+                }.lparams {
+                    width = resources.getDimensionPixelSize(R.dimen.app_list_icon_size)
+                    height = resources.getDimensionPixelSize(R.dimen.app_list_icon_size)
                 }
+
                 textView {
                     id = android.R.id.text1
                     padding = dip(20)
+                }.lparams {
+                    weight = 1f
                 }
 
                 button {
