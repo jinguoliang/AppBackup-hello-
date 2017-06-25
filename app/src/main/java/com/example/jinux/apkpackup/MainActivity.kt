@@ -5,11 +5,12 @@ package com.example.jinux.apkpackup
 import android.app.ListActivity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.*
 import org.jetbrains.anko.*
 import android.view.*
@@ -23,11 +24,25 @@ class MainActivity : ListActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val ui = MainActivityUI()
+        ui.setContentView(this)
+
         val launchableApp = getLauchableApp()
 
-        listAdapter = ApksAdapter(this, launchableApp.map { apk ->
+        listAdapter = ApksAdapter(this, launchableApp)
+
+        ui.searchTextView.addTextChangedListener(SearchListener(launchableApp) {
+            listAdapter = ApksAdapter(this, it)
+        })
+    }
+
+    private fun getLauchableApp(): List<ApkItem> {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+        return packageManager.queryIntentActivities(intent, 0).map { apk ->
             ApkItem(apk.loadIcon(packageManager),
                     apk.loadLabel(packageManager),
+                    apk.activityInfo.packageName,
                     onStartClick = {
                         val intent = packageManager.getLaunchIntentForPackage(apk.activityInfo.packageName)
                         try {
@@ -45,13 +60,7 @@ class MainActivity : ListActivity() {
                             toast(R.string.app_cant_show_detail_page)
                         }
                     })
-        })
-    }
-
-    private fun getLauchableApp(): List<ResolveInfo> {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)
-        return packageManager.queryIntentActivities(intent, 0)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -75,7 +84,49 @@ class MainActivity : ListActivity() {
     }
 }
 
+class SearchListener(val launchableApp: List<ApkItem>, val onSearch: (List<ApkItem>) -> Unit) : TextWatcher {
+    override fun afterTextChanged(editable: Editable?) {
+        val s = editable?.toString() ?: ""
+        if (s.isEmpty()) launchableApp
+
+        val filterd = launchableApp.filter { it.title.contains(s, ignoreCase = true)
+                                                || s.toLowerCase() in it.pkg }
+        onSearch(filterd)
+    }
+
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+    }
+
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+    }
+
+}
+
+class MainActivityUI : AnkoComponent<MainActivity> {
+    lateinit var searchTextView: EditText
+
+    override fun createView(ui: AnkoContext<MainActivity>) = with(ui) {
+        verticalLayout {
+            padding = dip(10)
+            frameLayout {
+                searchTextView = editText {
+                    hint = resources.getString(R.string.search_apk)
+                }.lparams {
+                    margin = dip(5)
+                }
+            }
+            listView {
+                id = android.R.id.list
+            }
+            textView {
+                id = android.R.id.empty
+            }
+        }
+    }.view()
+}
+
 class ApkItem(val icon: Drawable, val title: CharSequence,
+              val pkg: CharSequence,
               val onStartClick: ((v: View) -> Unit),
               val onDetailClick: ((v: View) -> Unit)) : ListItem {
 
@@ -140,6 +191,7 @@ class ApkItem(val icon: Drawable, val title: CharSequence,
     internal class ApkViewHolder(val icon: ImageView,
                                  val title: TextView,
                                  val start: Button, val detail: Button)
+
 }
 
 class ApksAdapter(ctx: Context, items: List<ListItem>) : ListItemAdapter(ctx, items) {
